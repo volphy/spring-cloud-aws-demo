@@ -1,11 +1,10 @@
-package com.krzysztofwilk;
+package com.krzysztofwilk.spring.cloud.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-@SuppressWarnings("squid:S1118")
-public class DemoApplication {
+public class Application {
 
     /**
      * Spring Boot entry method.
@@ -13,6 +12,6 @@ public class DemoApplication {
      */
     @SuppressWarnings("squid:S2095")
     public static void main(String[] args) {
-        SpringApplication.run(DemoApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 }

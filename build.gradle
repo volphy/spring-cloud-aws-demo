@@ -37,8 +37,9 @@ dependencies {
     compile('org.springframework.cloud:spring-cloud-starter-aws:1.1.3.RELEASE')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-hateoas')
+    compile 'org.projectlombok:lombok:1.16.14'
+    compile 'com.google.code.gson:gson:2.8.0'
 }
-
 
 bootRun {
     systemProperties = System.properties
