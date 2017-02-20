@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -36,7 +37,6 @@ public class ImagesController {
     private final ResourcePatternResolver resourcePatternResolver;
 
     private final String s3BucketName;
-
 
     @Autowired
     public ImagesController(ResourcePatternResolver resourcePatternResolver) {
@@ -62,13 +62,11 @@ public class ImagesController {
 
         Gson gson = new Gson();
 
-        // TODO: return proper HTTP Statuses (as specified by HTTP Specification) in exceptional situations
-
         return new ResponseEntity<>(gson.toJson(files), HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "image/{id}")
-    public ResponseEntity getFile(@PathVariable int id) throws IOException {
+    @RequestMapping(method = RequestMethod.GET, value = "image/{id}", produces = "application/octet-stream")
+    public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
 
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources("s3://" + s3BucketName + "/**/*.jpg");
 
@@ -86,9 +84,9 @@ public class ImagesController {
             throw e;
         }
 
-        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
+        response.addHeader("Content-Disposition", "attachment; filename=" + image.getFilename());
 
-        // TODO: return proper HTTP Statuses (as specified by HTTP Specification) in exceptional situations
+        InputStreamResource inputStreamResource = new InputStreamResource(inputStream);
 
         return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
     }
