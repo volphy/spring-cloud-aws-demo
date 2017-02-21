@@ -13,9 +13,10 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,7 +62,7 @@ public class ImagesController {
         this.s3BucketName = System.getProperty(S3_BUCKET_NAME);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "images", produces = "application/json")
+    @GetMapping(value = "images", produces = "application/json")
     public ResponseEntity getFiles() throws IOException {
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX + s3BucketName + "/**/*.jpg");
 
@@ -76,7 +77,7 @@ public class ImagesController {
         return new ResponseEntity<>(gson.toJson(files), HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "image/{id}", produces = "application/octet-stream")
+    @GetMapping(value = "image/{id}", produces = "application/octet-stream")
     public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
 
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX + s3BucketName + "/**/*.jpg");
@@ -102,7 +103,7 @@ public class ImagesController {
         return new ResponseEntity<>(inputStreamResource, HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "image/{id}")
+    @PutMapping(value = "image/{id}")
     public ResponseEntity updateFile(@PathVariable int id, @RequestParam MultipartFile file) throws IOException {
 
         Resource resource = this.resourceLoader.getResource(S3_PROTOCOL_PREFIX
