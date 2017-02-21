@@ -14,6 +14,7 @@ import org.springframework.core.io.WritableResource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +74,7 @@ public class ImagesController {
         this.s3BucketName = System.getProperty(S3_BUCKET_NAME);
     }
 
-    @GetMapping(value = "images", produces = "application/json")
+    @GetMapping(value = "images", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getFiles() throws IOException {
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX
                 + s3BucketName
@@ -90,7 +91,7 @@ public class ImagesController {
         return new ResponseEntity<>(gson.toJson(files), HttpStatus.OK);
     }
 
-    @GetMapping(value = "image/{id}", produces = "application/octet-stream")
+    @GetMapping(value = "image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
 
         Resource image = findImageById(id);
