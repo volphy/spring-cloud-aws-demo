@@ -1,6 +1,7 @@
 package com.krzysztofwilk.spring.cloud.demo.images;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -143,5 +146,19 @@ public class ImagesController {
                 .skip(id - 1)
                 .findFirst()
                 .orElseThrow(() -> new MissingResourceException("Missing image id=" + id, "String", "id"));
+    }
+
+    @PostMapping(value = "images")
+    public ResponseEntity sendFile(@RequestParam MultipartFile file) throws IOException {
+
+        InputStream inputStream = new ByteArrayInputStream(file.getBytes());
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+
+        s3Client.putObject(s3BucketName, file.getOriginalFilename(), inputStream, metadata);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
