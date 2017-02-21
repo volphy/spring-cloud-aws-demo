@@ -3,8 +3,7 @@ package com.krzysztofwilk.spring.cloud.demo.images;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.core.io.InputStreamResource;
@@ -39,11 +38,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.util.stream.Collectors.toList;
 
+@Slf4j
 @RestController
 @RequestMapping("/demo")
 public class ImagesController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ImagesController.class);
 
     private static final String S3_BUCKET_NAME = "s3BucketName";
 
@@ -76,6 +74,8 @@ public class ImagesController {
 
     @GetMapping(value = "images", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity getFiles() throws IOException {
+        log.info("Downloading list of images");
+
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX
                 + s3BucketName
                 + ALL_IMAGES_SUFFIX);
@@ -93,6 +93,7 @@ public class ImagesController {
 
     @GetMapping(value = "image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
+        log.info("Downloading image no. {}", id);
 
         Resource image = findImageById(id);
 
@@ -100,7 +101,7 @@ public class ImagesController {
         try {
             inputStream = image.getInputStream();
         } catch (IOException e) {
-            LOG.error("Cannot get input stream from S3: {}", e.getMessage(), e);
+            log.error("Cannot get input stream from S3: {}", e.getMessage(), e);
             throw e;
         }
 
@@ -113,6 +114,7 @@ public class ImagesController {
 
     @PutMapping(value = "image/{id}")
     public ResponseEntity updateFile(@PathVariable int id, @RequestParam MultipartFile file) throws IOException {
+        log.info("Updating image no. {}", id);
 
         Resource resource = this.resourceLoader.getResource(S3_PROTOCOL_PREFIX
                 + s3BucketName
@@ -129,6 +131,7 @@ public class ImagesController {
 
     @DeleteMapping(value = "image/{id}")
     public ResponseEntity deleteFile(@PathVariable int id) throws IOException {
+        log.info("Deleting image no. {}", id);
 
         Resource image = findImageById(id);
 
@@ -151,6 +154,7 @@ public class ImagesController {
 
     @PostMapping(value = "images")
     public ResponseEntity sendFile(@RequestParam MultipartFile file) throws IOException {
+        log.info("Uploading new image");
 
         InputStream inputStream = new ByteArrayInputStream(file.getBytes());
 
