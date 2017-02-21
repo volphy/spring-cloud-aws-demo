@@ -1,5 +1,6 @@
 package com.krzysztofwilk.spring.cloud.demo.images;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,18 +44,24 @@ public class ImagesController {
     private static final String S3_BUCKET_NAME = "s3BucketName";
 
     private static final String S3_PROTOCOL_PREFIX = "s3://";
+    private static final String ALL_IMAGES_SUFFIX = "/**/*.jpg";
 
     private final ResourcePatternResolver resourcePatternResolver;
 
     private final ResourceLoader resourceLoader;
 
+    private final AmazonS3Client s3Client;
+
     private final String s3BucketName;
 
     @Autowired
-    public ImagesController(ResourcePatternResolver resourcePatternResolver, ResourceLoader resourceLoader) {
+    public ImagesController(ResourcePatternResolver resourcePatternResolver,
+                            ResourceLoader resourceLoader,
+                            AmazonS3Client s3Client) {
 
         this.resourcePatternResolver = resourcePatternResolver;
         this.resourceLoader = resourceLoader;
+        this.s3Client = s3Client;
 
         if (System.getProperty(S3_BUCKET_NAME) == null) {
             throw new MissingResourceException("Missing S3 Bucket Name", "String", S3_BUCKET_NAME);
@@ -64,7 +72,9 @@ public class ImagesController {
 
     @GetMapping(value = "images", produces = "application/json")
     public ResponseEntity getFiles() throws IOException {
-        Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX + s3BucketName + "/**/*.jpg");
+        Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX
+                + s3BucketName
+                + ALL_IMAGES_SUFFIX);
 
         AtomicInteger index = new AtomicInteger(1);
         List<FileEntry> files = Arrays.stream(allImagesInBucket)
@@ -80,13 +90,7 @@ public class ImagesController {
     @GetMapping(value = "image/{id}", produces = "application/octet-stream")
     public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
 
-        Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX + s3BucketName + "/**/*.jpg");
-
-        Resource image = Arrays.stream(allImagesInBucket)
-                .sorted(Comparator.comparing(Resource::getFilename))
-                .skip(id - 1)
-                .findFirst()
-                .orElseThrow(() -> new MissingResourceException("Missing image id=" + id, "String", "id"));
+        Resource image = findImageById(id);
 
         InputStream inputStream;
         try {
@@ -117,5 +121,27 @@ public class ImagesController {
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "image/{id}")
+    public ResponseEntity deleteFile(@PathVariable int id) throws IOException {
+
+        Resource image = findImageById(id);
+
+        s3Client.deleteObject(s3BucketName, image.getFilename());
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Resource findImageById(@PathVariable int id) throws IOException {
+        Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX
+                + s3BucketName
+                + ALL_IMAGES_SUFFIX);
+
+        return Arrays.stream(allImagesInBucket)
+                .sorted(Comparator.comparing(Resource::getFilename))
+                .skip(id - 1)
+                .findFirst()
+                .orElseThrow(() -> new MissingResourceException("Missing image id=" + id, "String", "id"));
     }
 }
