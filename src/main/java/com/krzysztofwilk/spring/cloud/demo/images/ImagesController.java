@@ -44,7 +44,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RestController
 @RequestMapping("/demo")
-public class ImagesController {
+class ImagesController {
 
     private static final String S3_PROTOCOL_PREFIX = "s3://";
     private static final String ALL_IMAGES_SUFFIX = "/**/*.jpg";
@@ -59,7 +59,7 @@ public class ImagesController {
     private String s3BucketName;
 
     @GetMapping(value = "images", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getFiles() throws IOException {
+    ResponseEntity getFiles() throws IOException {
         log.info("Downloading list of images from S3 bucket {}", s3BucketName);
 
         Resource[] allImagesInBucket =  this.resourcePatternResolver.getResources(S3_PROTOCOL_PREFIX
@@ -78,7 +78,7 @@ public class ImagesController {
     }
 
     @GetMapping(value = "image/{id}", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
+    ResponseEntity getFile(@PathVariable int id, HttpServletResponse response) throws IOException {
         log.info("Downloading image no. {} from S3 bucket {}", id, s3BucketName);
 
         Resource image = findImageById(id);
@@ -99,7 +99,7 @@ public class ImagesController {
     }
 
     @PutMapping(value = "image/{id}")
-    public ResponseEntity updateFile(@PathVariable int id, @RequestParam MultipartFile file) throws IOException {
+    ResponseEntity updateFile(@PathVariable int id, @RequestParam MultipartFile file) throws IOException {
         log.info("Updating image no. {} from S3 bucket {}", id, s3BucketName);
 
         Resource resource = this.resourceLoader.getResource(S3_PROTOCOL_PREFIX
@@ -116,7 +116,7 @@ public class ImagesController {
     }
 
     @DeleteMapping(value = "image/{id}")
-    public ResponseEntity deleteFile(@PathVariable int id) throws IOException {
+    ResponseEntity deleteFile(@PathVariable int id) throws IOException {
         log.info("Deleting image no. {} from S3 bucket {}", id, s3BucketName);
 
         Resource image = findImageById(id);
@@ -139,7 +139,7 @@ public class ImagesController {
     }
 
     @PostMapping(value = "images")
-    public ResponseEntity sendFile(@RequestParam MultipartFile file) throws IOException {
+    ResponseEntity sendFile(@RequestParam MultipartFile file) throws IOException {
         log.info("Uploading new image to S3 bucket {}", s3BucketName);
 
         InputStream inputStream = new ByteArrayInputStream(file.getBytes());
