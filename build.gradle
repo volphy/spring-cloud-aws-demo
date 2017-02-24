@@ -1,19 +1,9 @@
-buildscript {
-	ext {
-		springBootVersion = '1.5.1.RELEASE'
-	}
-	repositories {
-		mavenCentral()
-    }
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
-}
-
 plugins {
     id 'java'
 	id 'eclipse'
+    id 'jacoco'
     id 'org.springframework.boot' version '1.5.1.RELEASE'
+    id 'org.sonarqube' version '2.2.1'
 }
 
 jar {
@@ -48,4 +38,15 @@ bootRun {
 
 test {
     systemProperties = System.properties
+}
+
+sonarqube {
+    properties {
+        property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
+        property "sonar.groovy.jacoco.reportPath", "build/jacoco/test.exec"
+    }
+}
+
+jacoco {
+    toolVersion = "0.7.9"
 }
