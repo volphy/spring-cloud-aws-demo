@@ -96,20 +96,23 @@ public class ImagesTest {
     }
 
     @Test
-    public void cannotUpdateFirstImageFromEmptyList() throws Exception {
+    public void updateFirstImageFromEmptyList() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file",
+                StreamUtils.copyToByteArray(new FileInputStream(SAMPLE_IMAGES[0])));
 
         doNothing().when(imagesService).updateResource(anyInt(), any());
 
-        mvc.perform(put("/demo/{id}", 1))
-                .andExpect(status().isNotFound());
+        mvc.perform(fileUpload("/demo/image/{id}", 1)
+                .file(file))
+                .andExpect(status().isOk());
     }
 
     @Test
-    public void cannotDeleteFirstImageFromEmptyList() throws Exception {
+    public void deleteFirstImageFromEmptyList() throws Exception {
 
         doNothing().when(imagesService).deleteResource(anyInt());
 
-        mvc.perform(delete("/demo/{id}", 1))
-                .andExpect(status().isNotFound());
+        mvc.perform(delete("/demo/image/{id}", 1))
+                .andExpect(status().isOk());
     }
 }
