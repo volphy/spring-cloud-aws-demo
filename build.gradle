@@ -42,7 +42,7 @@ test {
 
 sonarqube {
     properties {
-        property "sonar.jacoco.reportPath", "build/jacoco/test.exec"
+        property "sonar.jacoco.reportPaths", ["build/jacoco/test.exec"]
         property "sonar.groovy.jacoco.reportPath", "build/jacoco/test.exec"
     }
 }
