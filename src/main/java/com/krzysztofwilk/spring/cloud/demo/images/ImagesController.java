@@ -62,13 +62,7 @@ class ImagesController {
 
         Resource image = imagesService.findImageById(id);
 
-        InputStream inputStream;
-        try {
-            inputStream = image.getInputStream();
-        } catch (IOException e) {
-            log.error("Cannot get input stream from S3 bucket {} - {}", s3BucketName, e.getMessage(), e);
-            throw e;
-        }
+        InputStream inputStream = image.getInputStream();
 
         response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + image.getFilename());
 
